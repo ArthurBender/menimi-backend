@@ -6,6 +6,8 @@ gem "rails", "~> 8.1.2"
 gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
+# Recurrence rules (RFC 5545) parsing and evaluation
+gem "rrule"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
