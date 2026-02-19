@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "file://task.json#",
+  "type": "object",
+  "required": [
+    "id",
+    "user_id",
+    "title",
+    "description",
+    "rrule",
+    "starts_at",
+    "timezone",
+    "carry_over",
+    "active",
+    "created_at",
+    "updated_at",
+    "occurrences"
+  ],
+  "properties": {
+    "id": { "type": "integer" },
+    "user_id": { "type": "integer" },
+    "title": { "type": "string" },
+    "description": { "type": ["string", "null"] },
+    "rrule": { "type": ["string", "null"] },
+    "starts_at": { "type": "string", "format": "date-time" },
+    "timezone": { "type": "string" },
+    "carry_over": { "type": "boolean" },
+    "active": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "occurrences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "occurred_at", "status"],
+        "properties": {
+          "id": { "type": "integer" },
+          "occurred_at": { "type": "string", "format": "date-time" },
+          "status": { "type": "string" }
+        }
+      }
+    }
+  }
+}
