@@ -45,12 +45,17 @@ RSpec.describe "TaskOccurrences", type: :request do
     end
 
     it "does not update a task_occurrence with invalid parameters" do
+      original_attributes = @task_occurrence.attributes
+
       put api_v1_task_occurrence_path(@task_occurrence), params: { task_occurrence: { status: nil } }
 
       expect(response).to have_http_status(422)
 
       body = JSON.parse(response.body)
       expect(body["errors"]).to include("Status can't be blank")
+
+      @task_occurrence.reload
+      expect(@task_occurrence.attributes).to eq(original_attributes)
     end
 
     it "returns a 404 if the task_occurrence does not exist" do

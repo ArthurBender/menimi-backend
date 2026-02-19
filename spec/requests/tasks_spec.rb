@@ -70,6 +70,8 @@ RSpec.describe "Tasks", type: :request do
     end
 
     it "does not update a task with invalid parameters" do
+      original_attributes = @task.attributes
+
       put api_v1_task_path(@task), params: { task: { title: nil, active: nil } }
 
       expect(response).to have_http_status(422)
@@ -79,6 +81,9 @@ RSpec.describe "Tasks", type: :request do
         "Title can't be blank",
         "Active is not included in the list"
       )
+
+      @task.reload
+      expect(@task.attributes).to eq(original_attributes)
     end
 
     it "returns a 404 if the task does not exist" do
