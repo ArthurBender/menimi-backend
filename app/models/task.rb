@@ -7,6 +7,8 @@ class Task < ApplicationRecord
 
   validate :rrule_must_be_valid
 
+  before_validation :set_default_timezone, on: :create
+
   private
 
   def rrule_must_be_valid
@@ -15,5 +17,9 @@ class Task < ApplicationRecord
     RRule::Rule.new(rrule)
   rescue StandardError
     errors.add(:rrule, "must be a valid RRULE")
+  end
+
+  def set_default_timezone
+    self.timezone ||= user&.timezone
   end
 end
