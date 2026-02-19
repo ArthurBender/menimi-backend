@@ -43,6 +43,21 @@ RSpec.describe "TaskOccurrences", type: :request do
       @task_occurrence.reload
       expect(@task_occurrence.status).to eq("missed")
     end
+
+    it "does not update a task_occurrence with invalid parameters" do
+      put api_v1_task_occurrence_path(@task_occurrence), params: { task_occurrence: { status: nil } }
+
+      expect(response).to have_http_status(422)
+
+      body = JSON.parse(response.body)
+      expect(body["errors"]).to include("Status can't be blank")
+    end
+
+    it "returns a 404 if the task_occurrence does not exist" do
+      put api_v1_task_occurrence_path(0)
+
+      expect(response).to have_http_status(404)
+    end
   end
 
   describe "DELETE /task_occurrences/:id" do
@@ -52,6 +67,12 @@ RSpec.describe "TaskOccurrences", type: :request do
       }.to change { TaskOccurrence.count }.by(-1)
 
       expect(response).to have_http_status(204)
+    end
+
+    it "returns a 404 if the task_occurrence does not exist" do
+      delete api_v1_task_occurrence_path(0)
+
+      expect(response).to have_http_status(404)
     end
   end
 end

@@ -23,6 +23,12 @@ RSpec.describe "Tasks", type: :request do
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("task")
     end
+
+    it "returns a 404 if the task does not exist" do
+      get api_v1_task_path(0)
+
+      expect(response).to have_http_status(404)
+    end
   end
 
   describe "POST /tasks" do
@@ -61,6 +67,24 @@ RSpec.describe "Tasks", type: :request do
       @task.reload
       expect(@task.title).to eq("Updated task title")
       expect(@task.active).to eq(false)
+    end
+
+    it "does not update a task with invalid parameters" do
+      put api_v1_task_path(@task), params: { task: { title: nil, active: nil } }
+
+      expect(response).to have_http_status(422)
+
+      body = JSON.parse(response.body)
+      expect(body["errors"]).to include(
+        "Title can't be blank",
+        "Active is not included in the list"
+      )
+    end
+
+    it "returns a 404 if the task does not exist" do
+      put api_v1_task_path(0)
+
+      expect(response).to have_http_status(404)
     end
   end
 end

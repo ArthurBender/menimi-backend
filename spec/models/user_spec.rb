@@ -25,4 +25,21 @@ RSpec.describe User, type: :model do
       expect(user).not_to be_valid
     end
   end
+
+  describe "associations" do
+    before do
+      @user = create(:user)
+      @task = create(:task, user: @user)
+    end
+
+    it "has many tasks" do
+      expect(@user.tasks).to include(@task)
+    end
+
+    it "has dependent tasks" do
+      expect {
+        @user.destroy
+      }.to change { Task.count }.by(-1)
+    end
+  end
 end

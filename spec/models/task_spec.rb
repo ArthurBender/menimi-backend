@@ -24,6 +24,28 @@ RSpec.describe Task, type: :model do
     end
   end
 
+  describe "associations" do
+    before do
+      @user = create(:user)
+      @task = create(:task, user: @user)
+      @task_occurrence = create(:task_occurrence, task: @task)
+    end
+
+    it "has many task_occurrences" do
+      expect(@task.task_occurrences).to include(@task_occurrence)
+    end
+
+    it "belongs to user" do
+      expect(@task.user).to eq(@user)
+    end
+
+    it "has dependant task_occurrences" do
+      expect {
+        @task.destroy
+      }.to change { TaskOccurrence.count }.by(-1)
+    end
+  end
+
   describe "#set_default_timezone" do
     it "defaults timezone from the user on build/validation" do
       user = build(:user, timezone: "America/New_York")
