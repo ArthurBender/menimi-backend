@@ -4,7 +4,12 @@ module Api
       before_action :set_task_occurrence, only: %i[update destroy]
 
       def create
-        @task_occurrence = TaskOccurrence.new(task_occurrence_params)
+        if resolve_missed_occurrence!
+          render :show
+          return
+        end
+
+        @task_occurrence = TaskOccurrence.new(create_task_occurrence_params)
 
         if @task_occurrence.save
           render :show, status: :created
@@ -35,7 +40,31 @@ module Api
       end
 
       def task_occurrence_params
-        params.require(:task_occurrence).permit(:task_id, :occurred_at, :status)
+        params.require(:task_occurrence).permit(:task_id, :occurred_at, :status, :carried_from)
+      end
+
+      def create_task_occurrence_params
+        task_occurrence_params.except(:carried_from)
+      end
+
+      def resolve_missed_occurrence!
+        return false unless task_occurrence_params[:status].to_s == "done"
+        return false if task_occurrence_params[:carried_from].blank?
+
+        task = Task.find_by(id: task_occurrence_params[:task_id])
+        occurred_at = task_occurrence_params[:occurred_at]
+
+        return false if task.blank?
+
+        @task_occurrence = task.task_occurrences.status_missed
+                               .find_by(id: task_occurrence_params[:carried_from])
+        return false unless @task_occurrence
+
+        @task_occurrence.update!(
+          status: :done,
+          occurred_at: occurred_at.presence || @task_occurrence.occurred_at
+        )
+        true
       end
     end
   end

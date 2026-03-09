@@ -8,6 +8,8 @@ gem "pg", "~> 1.1"
 gem "puma", ">= 5.0"
 # Recurrence rules (RFC 5545) parsing and evaluation
 gem "rrule"
+gem "sidekiq"
+gem "sidekiq-cron"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
