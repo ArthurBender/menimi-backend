@@ -31,6 +31,77 @@ RSpec.describe "TaskOccurrences", type: :request do
         "Status can't be blank"
       )
     end
+
+    it "resolves a missed occurrence when carried_from is provided" do
+      missed_occurrence = create(
+        :task_occurrence,
+        task: @task,
+        status: "missed",
+        occurred_at: Time.zone.parse("2026-03-08 10:00:00")
+      )
+      resolved_at = Time.zone.parse("2026-03-09 09:30:00")
+
+      expect {
+        post api_v1_task_occurrences_path, params: {
+          task_occurrence: {
+            task_id: @task.id,
+            status: "done",
+            carried_from: missed_occurrence.id,
+            occurred_at: resolved_at
+          }
+        }
+      }.not_to change { TaskOccurrence.count }
+
+      expect(response).to have_http_status(200)
+      expect(response).to match_json_schema("task_occurrence")
+
+      missed_occurrence.reload
+      expect(missed_occurrence.status).to eq("done")
+      expect(missed_occurrence.occurred_at).to eq(resolved_at)
+
+      body = JSON.parse(response.body)
+      expect(body["id"]).to eq(missed_occurrence.id)
+    end
+
+    it "keeps original occurred_at when resolving with carried_from and no occurred_at" do
+      original_time = Time.zone.parse("2026-03-08 10:00:00")
+      missed_occurrence = create(:task_occurrence, task: @task, status: "missed", occurred_at: original_time)
+
+      post api_v1_task_occurrences_path, params: {
+        task_occurrence: {
+          task_id: @task.id,
+          status: "done",
+          carried_from: missed_occurrence.id
+        }
+      }
+
+      expect(response).to have_http_status(200)
+
+      missed_occurrence.reload
+      expect(missed_occurrence.status).to eq("done")
+      expect(missed_occurrence.occurred_at).to eq(original_time)
+    end
+
+    it "does not resolve a missed occurrence from another task" do
+      another_task = create(:task, user: @user)
+      missed_occurrence = create(:task_occurrence, task: another_task, status: "missed")
+
+      expect {
+        post api_v1_task_occurrences_path, params: {
+          task_occurrence: {
+            task_id: @task.id,
+            status: "done",
+            carried_from: missed_occurrence.id,
+            occurred_at: Time.zone.parse("2026-03-09 08:00:00")
+          }
+        }
+      }.to change { TaskOccurrence.count }.by(1)
+
+      expect(response).to have_http_status(201)
+
+      missed_occurrence.reload
+      expect(missed_occurrence.status).to eq("missed")
+    end
   end
 
   describe "PUT /task_occurrences/:id" do
