@@ -15,7 +15,7 @@ module Api
         end
 
         def update
-          if current_user.update_without_password(account_update_params)
+          if current_user.update(account_update_params)
             render_resource(current_user)
           else
             render_errors(current_user)
