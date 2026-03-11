@@ -4,13 +4,13 @@ module Api
       before_action :set_task, only: %i[show update]
 
       def index
-        @tasks = Task.includes(:task_occurrences).all
+        @tasks = current_user.tasks.includes(:task_occurrences)
       end
 
       def show; end
 
       def create
-        @task = Task.new(task_params)
+        @task = current_user.tasks.new(task_params)
 
         if @task.save
           render :show, status: :created
@@ -30,12 +30,11 @@ module Api
       private
 
       def set_task
-        @task = Task.includes(:task_occurrences).find(params[:id])
+        @task = current_user.tasks.includes(:task_occurrences).find(params[:id])
       end
 
       def task_params
         params.require(:task).permit(
-          :user_id,
           :title,
           :description,
           :rrule,

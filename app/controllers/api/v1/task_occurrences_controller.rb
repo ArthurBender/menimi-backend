@@ -36,11 +36,17 @@ module Api
       private
 
       def set_task_occurrence
-        @task_occurrence = TaskOccurrence.find(params[:id])
+        @task_occurrence = TaskOccurrence.joins(:task)
+                                         .where(tasks: { user_id: current_user.id })
+                                         .find(params[:id])
       end
 
       def task_occurrence_params
-        params.require(:task_occurrence).permit(:task_id, :occurred_at, :status, :carried_from)
+        permitted_params = params.require(:task_occurrence).permit(:task_id, :occurred_at, :status, :carried_from)
+
+        return permitted_params if permitted_params[:task_id].blank?
+
+        permitted_params.merge(task_id: current_user.tasks.find(permitted_params[:task_id]).id)
       end
 
       def create_task_occurrence_params
@@ -51,7 +57,7 @@ module Api
         return false unless task_occurrence_params[:status].to_s == "done"
         return false if task_occurrence_params[:carried_from].blank?
 
-        task = Task.find_by(id: task_occurrence_params[:task_id])
+        task = current_user.tasks.find_by(id: task_occurrence_params[:task_id])
         occurred_at = task_occurrence_params[:occurred_at]
 
         return false if task.blank?
