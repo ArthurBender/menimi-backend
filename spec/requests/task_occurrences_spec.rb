@@ -5,22 +5,27 @@ RSpec.describe "TaskOccurrences", type: :request do
     @user = create(:user)
     @task = create(:task, user: @user)
     @task_occurrence = create(:task_occurrence, task: @task)
+    @headers = auth_headers_for(@user)
   end
 
   describe "POST /task_occurrences" do
     it "creates a task_occurrence with the expected JSON fields" do
-      expect {
-        post api_v1_task_occurrences_path, params: { task_occurrence: { task_id: @task.id, occurred_at: Time.now, status: "done" } }
-      }.to change { TaskOccurrence.count }.by(1)
+      expect do
+        post api_v1_task_occurrences_path,
+             params: { task_occurrence: { task_id: @task.id, occurred_at: Time.current, status: "done" } }.to_json,
+             headers: @headers
+      end.to change(TaskOccurrence, :count).by(1)
 
       expect(response).to have_http_status(201)
       expect(response).to match_json_schema("task_occurrence")
     end
 
     it "does not create a task_occurrence with invalid parameters" do
-      expect {
-        post api_v1_task_occurrences_path, params: { task_occurrence: { task_id: nil, occurred_at: nil, status: nil } }
-      }.to change { TaskOccurrence.count }.by(0)
+      expect do
+        post api_v1_task_occurrences_path,
+             params: { task_occurrence: { task_id: nil, occurred_at: nil, status: nil } }.to_json,
+             headers: @headers
+      end.not_to change(TaskOccurrence, :count)
 
       expect(response).to have_http_status(422)
 
@@ -49,8 +54,8 @@ RSpec.describe "TaskOccurrences", type: :request do
             carried_from: missed_occurrence.id,
             occurred_at: resolved_at
           }
-        }
-      }.not_to change { TaskOccurrence.count }
+        }.to_json, headers: @headers
+      }.not_to change(TaskOccurrence, :count)
 
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("task_occurrence")
@@ -73,7 +78,7 @@ RSpec.describe "TaskOccurrences", type: :request do
           status: "done",
           carried_from: missed_occurrence.id
         }
-      }
+      }.to_json, headers: @headers
 
       expect(response).to have_http_status(200)
 
@@ -94,19 +99,31 @@ RSpec.describe "TaskOccurrences", type: :request do
             carried_from: missed_occurrence.id,
             occurred_at: Time.zone.parse("2026-03-09 08:00:00")
           }
-        }
-      }.to change { TaskOccurrence.count }.by(1)
+        }.to_json, headers: @headers
+      }.to change(TaskOccurrence, :count).by(1)
 
       expect(response).to have_http_status(201)
 
       missed_occurrence.reload
       expect(missed_occurrence.status).to eq("missed")
     end
+
+    it "returns 404 for another user's task" do
+      other_task = create(:task, user: create(:user))
+
+      post api_v1_task_occurrences_path,
+           params: { task_occurrence: { task_id: other_task.id, occurred_at: Time.current, status: "done" } }.to_json,
+           headers: @headers
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe "PUT /task_occurrences/:id" do
     it "updates a task_occurrence with the expected JSON fields" do
-      put api_v1_task_occurrence_path(@task_occurrence), params: { task_occurrence: { status: "missed" } }
+      put api_v1_task_occurrence_path(@task_occurrence),
+          params: { task_occurrence: { status: "missed" } }.to_json,
+          headers: @headers
 
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("task_occurrence")
@@ -118,7 +135,9 @@ RSpec.describe "TaskOccurrences", type: :request do
     it "does not update a task_occurrence with invalid parameters" do
       original_attributes = @task_occurrence.attributes
 
-      put api_v1_task_occurrence_path(@task_occurrence), params: { task_occurrence: { status: nil } }
+      put api_v1_task_occurrence_path(@task_occurrence),
+          params: { task_occurrence: { status: nil } }.to_json,
+          headers: @headers
 
       expect(response).to have_http_status(422)
 
@@ -130,7 +149,7 @@ RSpec.describe "TaskOccurrences", type: :request do
     end
 
     it "returns a 404 if the task_occurrence does not exist" do
-      put api_v1_task_occurrence_path(0)
+      put api_v1_task_occurrence_path(0), headers: @headers
 
       expect(response).to have_http_status(404)
     end
@@ -138,15 +157,15 @@ RSpec.describe "TaskOccurrences", type: :request do
 
   describe "DELETE /task_occurrences/:id" do
     it "deletes a task_occurrence" do
-      expect {
-        delete api_v1_task_occurrence_path(@task_occurrence)
-      }.to change { TaskOccurrence.count }.by(-1)
+      expect do
+        delete api_v1_task_occurrence_path(@task_occurrence), headers: @headers
+      end.to change(TaskOccurrence, :count).by(-1)
 
       expect(response).to have_http_status(204)
     end
 
     it "returns a 404 if the task_occurrence does not exist" do
-      delete api_v1_task_occurrence_path(0)
+      delete api_v1_task_occurrence_path(0), headers: @headers
 
       expect(response).to have_http_status(404)
     end

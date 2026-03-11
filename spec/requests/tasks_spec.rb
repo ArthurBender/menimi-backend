@@ -5,11 +5,12 @@ RSpec.describe "Tasks", type: :request do
     @user = create(:user)
     @task = create(:task, user: @user)
     @task_occurrence = create(:task_occurrence, task: @task)
+    @headers = auth_headers_for(@user)
   end
 
   describe "GET /tasks" do
     it "returns tasks with the expected JSON fields" do
-      get api_v1_tasks_path
+      get api_v1_tasks_path, headers: @headers
 
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("tasks")
@@ -18,14 +19,14 @@ RSpec.describe "Tasks", type: :request do
 
   describe "GET /tasks/:id" do
     it "returns a task with the expected JSON fields" do
-      get api_v1_task_path(@task)
+      get api_v1_task_path(@task), headers: @headers
 
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("task")
     end
 
     it "returns a 404 if the task does not exist" do
-      get api_v1_task_path(0)
+      get api_v1_task_path(0), headers: @headers
 
       expect(response).to have_http_status(404)
     end
@@ -33,33 +34,42 @@ RSpec.describe "Tasks", type: :request do
 
   describe "POST /tasks" do
     it "creates a task with the expected JSON fields" do
-      expect {
-        post api_v1_tasks_path, params: { task: { title: "Task title", starts_at: Time.now, user_id: @user.id } }
-      }.to change { Task.count }.by(1)
+      expect do
+        post api_v1_tasks_path,
+             params: { task: { title: "Task title", starts_at: Time.current } }.to_json,
+             headers: @headers
+      end.to change(Task, :count).by(1)
 
       expect(response).to have_http_status(201)
       expect(response).to match_json_schema("task")
     end
 
     it "does not create a task with invalid parameters" do
-      expect {
-        post api_v1_tasks_path, params: { task: { title: nil, starts_at: nil, user_id: nil } }
-      }.not_to change { Task.count }
+      expect do
+        post api_v1_tasks_path, params: { task: { title: nil, starts_at: nil } }.to_json, headers: @headers
+      end.not_to change(Task, :count)
 
       expect(response).to have_http_status(422)
 
       body = JSON.parse(response.body)
       expect(body["errors"]).to include(
         "Title can't be blank",
-        "Starts at can't be blank",
-        "User must exist"
+        "Starts at can't be blank"
       )
+    end
+
+    it "requires authentication" do
+      post api_v1_tasks_path, params: { task: { title: "Task title", starts_at: Time.current } }
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
   describe "PUT /tasks/:id" do
     it "updates a task with the expected JSON fields" do
-      put api_v1_task_path(@task), params: { task: { title: "Updated task title", active: false } }
+      put api_v1_task_path(@task),
+          params: { task: { title: "Updated task title", active: false } }.to_json,
+          headers: @headers
 
       expect(response).to have_http_status(200)
       expect(response).to match_json_schema("task")
@@ -72,7 +82,7 @@ RSpec.describe "Tasks", type: :request do
     it "does not update a task with invalid parameters" do
       original_attributes = @task.attributes
 
-      put api_v1_task_path(@task), params: { task: { title: nil, active: nil } }
+      put api_v1_task_path(@task), params: { task: { title: nil, active: nil } }.to_json, headers: @headers
 
       expect(response).to have_http_status(422)
 
@@ -87,9 +97,19 @@ RSpec.describe "Tasks", type: :request do
     end
 
     it "returns a 404 if the task does not exist" do
-      put api_v1_task_path(0)
+      put api_v1_task_path(0), headers: @headers
 
       expect(response).to have_http_status(404)
+    end
+
+    it "does not allow updating another user's task" do
+      other_task = create(:task, user: create(:user))
+
+      put api_v1_task_path(other_task),
+          params: { task: { title: "Updated task title" } }.to_json,
+          headers: @headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

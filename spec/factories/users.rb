@@ -3,5 +3,9 @@ FactoryBot.define do
     sequence(:email) { |n| "user#{n}@example.com" }
     first_name { "John" }
     last_name { "Doe" }
+    timezone { "UTC" }
+    password { "password123" }
+    password_confirmation { "password123" }
+    jti { SecureRandom.uuid }
   end
 end
