@@ -39,7 +39,6 @@ module Api
           :description,
           :rrule,
           :starts_at,
-          :timezone,
           :carry_over,
           :active
         )

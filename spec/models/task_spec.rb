@@ -12,15 +12,14 @@ RSpec.describe Task, type: :model do
       expect(task).to be_valid
     end
 
-    it "requires user, title, starts_at and timezone" do
-      task = build(:task, user: nil, title: nil, starts_at: nil, timezone: nil)
+    it "requires user, title and starts_at" do
+      task = build(:task, user: nil, title: nil, starts_at: nil)
 
       expect(task).not_to be_valid
 
       expect(task.errors[:user]).to include("must exist")
       expect(task.errors[:title]).to include("can't be blank")
       expect(task.errors[:starts_at]).to include("can't be blank")
-      expect(task.errors[:timezone]).to include("can't be blank")
     end
   end
 
@@ -43,24 +42,6 @@ RSpec.describe Task, type: :model do
       expect {
         @task.destroy
       }.to change { TaskOccurrence.count }.by(-1)
-    end
-  end
-
-  describe "#set_default_timezone" do
-    it "defaults timezone from the user on build/validation" do
-      user = build(:user, timezone: "America/New_York")
-      task = build(:task, user:)
-
-      expect(task).to be_valid
-      expect(task.timezone).to eq("America/New_York")
-    end
-
-    it "does not overwrite an explicit timezone" do
-      user = build(:user, timezone: "America/New_York")
-      task = build(:task, user:, timezone: "Europe/Paris")
-
-      expect(task).to be_valid
-      expect(task.timezone).to eq("Europe/Paris")
     end
   end
 

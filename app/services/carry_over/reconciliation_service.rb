@@ -13,7 +13,7 @@ module CarryOver
     def call
       return unless zone
 
-      Task.where(active: true, timezone:).find_each do |task|
+      Task.joins(:user).where(active: true, users: { timezone: }).find_each do |task|
         reconcile_task(task)
       end
     end

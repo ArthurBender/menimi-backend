@@ -16,7 +16,6 @@ tasks = [
     description: "Write a short daily journal entry.",
     rrule: "FREQ=DAILY;INTERVAL=1",
     starts_at: "2026-02-01 08:00",
-    timezone: "America/Sao_Paulo",
     carry_over: false,
     active: true
   },
@@ -25,7 +24,6 @@ tasks = [
     description: "Strength training workout.",
     rrule: "FREQ=WEEKLY;BYDAY=MO,WE,FR",
     starts_at: "2026-02-03 18:30",
-    timezone: "America/Sao_Paulo",
     carry_over: true,
     active: true
   },
@@ -34,7 +32,6 @@ tasks = [
     description: "Monthly rent payment.",
     rrule: "FREQ=MONTHLY;BYMONTHDAY=5",
     starts_at: "2026-02-05 09:00",
-    timezone: "America/Sao_Paulo",
     carry_over: false,
     active: true
   },
@@ -43,14 +40,13 @@ tasks = [
     description: "Read for 30 minutes.",
     rrule: nil,
     starts_at: "2026-02-04 21:00",
-    timezone: "America/Sao_Paulo",
     carry_over: false,
     active: true
   }
 ]
 
 task_records = tasks.map do |attributes|
-  starts_at = Time.use_zone(attributes[:timezone]) do
+  starts_at = Time.use_zone(user.timezone) do
     Time.zone.parse(attributes.fetch(:starts_at))
   end
 
@@ -79,7 +75,7 @@ task_records.each do |task|
   next unless occurrences_by_task_title.key?(task.title)
 
   occurrences_by_task_title.fetch(task.title).each do |occurred_at, status|
-    occurred_time = Time.use_zone(task.timezone) { Time.zone.parse(occurred_at) }
+    occurred_time = Time.use_zone(task.user.timezone) { Time.zone.parse(occurred_at) }
 
     TaskOccurrence.find_or_create_by!(
       task: task,

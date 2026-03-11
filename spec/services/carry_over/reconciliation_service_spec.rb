@@ -7,7 +7,7 @@ RSpec.describe CarryOver::ReconciliationService do
   describe ".call" do
     it "creates missed occurrence for due non-recurrent task" do
       starts_at = Time.use_zone(timezone) { Time.zone.parse("2026-03-09 08:00:00") }
-      task = create(:task, user:, timezone:, starts_at:, rrule: nil, active: true)
+      task = create(:task, user:, starts_at:, rrule: nil, active: true)
       reference_time = Time.use_zone(timezone) { Time.zone.parse("2026-03-10 00:05:00") }
 
       expect {
@@ -21,7 +21,7 @@ RSpec.describe CarryOver::ReconciliationService do
 
     it "does not create missed occurrence when one already exists on target date" do
       starts_at = Time.use_zone(timezone) { Time.zone.parse("2026-03-09 08:00:00") }
-      task = create(:task, user:, timezone:, starts_at:, rrule: nil, active: true)
+      task = create(:task, user:, starts_at:, rrule: nil, active: true)
       create(:task_occurrence, task:, status: "done", occurred_at: starts_at)
       reference_time = Time.use_zone(timezone) { Time.zone.parse("2026-03-10 00:05:00") }
 
@@ -32,7 +32,7 @@ RSpec.describe CarryOver::ReconciliationService do
 
     it "creates missed occurrence for due recurrent task" do
       starts_at = Time.use_zone(timezone) { Time.zone.parse("2026-03-01 08:00:00") }
-      task = create(:task, user:, timezone:, starts_at:, rrule: "FREQ=DAILY;INTERVAL=1", active: true)
+      task = create(:task, user:, starts_at:, rrule: "FREQ=DAILY;INTERVAL=1", active: true)
       reference_time = Time.use_zone(timezone) { Time.zone.parse("2026-03-10 00:05:00") }
 
       expect {
@@ -46,7 +46,7 @@ RSpec.describe CarryOver::ReconciliationService do
 
     it "is idempotent when called multiple times for the same target date" do
       starts_at = Time.use_zone(timezone) { Time.zone.parse("2026-03-01 08:00:00") }
-      task = create(:task, user:, timezone:, starts_at:, rrule: "FREQ=DAILY;INTERVAL=1", active: true)
+      task = create(:task, user:, starts_at:, rrule: "FREQ=DAILY;INTERVAL=1", active: true)
       reference_time = Time.use_zone(timezone) { Time.zone.parse("2026-03-10 00:05:00") }
 
       described_class.call(timezone:, reference_time:)
