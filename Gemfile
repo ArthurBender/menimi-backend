@@ -36,7 +36,7 @@ group :development, :test do
   gem "brakeman", require: false
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
-  gem "rspec-rails", "~> 8.0.0"
+  gem "rspec-rails", "~> 8.0.4"
   gem "factory_bot_rails"
   gem "json_matchers"
 
