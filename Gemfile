@@ -36,7 +36,7 @@ group :development, :test do
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
+  gem "brakeman", "~> 8.0", ">= 8.0.4", require: false
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
   gem "rspec-rails", "~> 8.0.0"
