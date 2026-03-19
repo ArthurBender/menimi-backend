@@ -86,7 +86,7 @@ module Notifications
     end
 
     def due_today_task_titles
-      due_today_tasks.sort_by(&:starts_at).map(&:title)
+      due_today_tasks.map(&:title)
     end
 
     def late_task_titles
