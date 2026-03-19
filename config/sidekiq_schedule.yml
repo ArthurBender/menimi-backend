@@ -3,11 +3,19 @@ development:
     class: CarryOverReconciliationJob
     cron: "*/10 * * * *"
     queue: default
+  morning_summary_notifications:
+    class: MorningSummaryNotificationsJob
+    cron: "*/10 * * * *"
+    queue: default
 
 test: {}
 
 production:
   carry_over_reconciliation:
     class: CarryOverReconciliationJob
+    cron: "*/10 * * * *"
+    queue: default
+  morning_summary_notifications:
+    class: MorningSummaryNotificationsJob
     cron: "*/10 * * * *"
     queue: default
