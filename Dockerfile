@@ -8,7 +8,7 @@ ENV RAILS_ENV=production \
     BUNDLE_WITHOUT=development:test
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential libpq-dev postgresql-client && \
+    apt-get install --no-install-recommends -y build-essential libpq-dev libyaml-dev pkg-config postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 COPY Gemfile Gemfile.lock ./
