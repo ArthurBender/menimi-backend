@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :tasks, only: %i[index show create update]
       resources :task_occurrences, only: %i[create update destroy]
+      resource :push_subscriptions, only: %i[create destroy]
     end
   end
 
