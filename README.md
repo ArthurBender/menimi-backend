@@ -28,6 +28,12 @@ In non-production environments, CORS defaults to `http://localhost:3000` and `ht
 - `/up` remains available for health checks.
 - Sidekiq must be running for scheduled carry-over and morning-summary jobs.
 
+## Docker publish
+
+- GitHub Actions runs security scans, RuboCop, and RSpec before building the Docker image.
+- On pushes to `master`, the workflow publishes `arthurllbender/menimi-backend:latest` to Docker Hub.
+- Add the `DOCKERPASS` repository secret in GitHub before enabling the workflow.
+
 ## Verification
 
 - API health check: `GET /up`

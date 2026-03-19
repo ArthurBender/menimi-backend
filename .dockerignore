@@ -1,0 +1,13 @@
+.git
+.github
+.bundle
+log/*
+tmp/*
+tmp/pids/*
+tmp/cache/*
+tmp/storage/*
+coverage
+spec
+vendor/bundle
+node_modules
+.env*
