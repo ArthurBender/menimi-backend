@@ -1,17 +1,19 @@
-# Be sure to restart your server when you modify this file.
+allowed_origins = ENV.fetch("CORS_ALLOWED_ORIGINS", "")
+                     .split(",")
+                     .map(&:strip)
+                     .reject(&:blank?)
 
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin Ajax requests.
-
-# Read more: https://github.com/cyu/rack-cors
+if Rails.env.production? && allowed_origins.empty?
+  raise "CORS_ALLOWED_ORIGINS must be set in production"
+end
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "*"
+    origins(*allowed_origins.presence || [ "http://localhost:3000", "http://127.0.0.1:3000" ])
 
     resource "*",
-      headers: :any,
-      methods: [ :get, :post, :put, :patch, :delete, :options, :head ],
-      expose: [ "Authorization" ]
+             headers: :any,
+             methods: [ :get, :post, :put, :patch, :delete, :options, :head ],
+             expose: [ "Authorization" ]
   end
 end

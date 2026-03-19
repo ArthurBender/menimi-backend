@@ -10,7 +10,7 @@ module Notifications
 
     def call
       configured_timezones.each do |timezone|
-        # next unless run_window_open?(timezone)
+        next unless run_window_open?(timezone)
 
         users_for_timezone(timezone).find_each do |user|
           payload = MorningSummaryPayloadBuilder.call(user:, reference_time:)
