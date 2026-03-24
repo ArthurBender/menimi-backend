@@ -10,6 +10,7 @@ gem "puma", ">= 5.0"
 gem "rrule"
 gem "sidekiq"
 gem "sidekiq-cron"
+gem "solid_cache"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
