@@ -82,10 +82,15 @@ module Ai
         Mention the user's first name naturally.
         Base the message only on the provided daily resume.
         Do not invent tasks or facts.
+        Write the final answer in #{language_label}.
 
         Daily resume:
         #{JSON.pretty_generate(daily_resume)}
       PROMPT
+    end
+
+    def language_label
+      user.language == "pt-BR" ? "Brazilian Portuguese" : "English"
     end
 
     def request

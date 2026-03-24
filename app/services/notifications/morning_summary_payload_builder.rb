@@ -11,11 +11,13 @@ module Notifications
     end
 
     def call
-      {
-        title: "Daily task summary",
-        body:,
-        url: "/calendar"
-      }
+      I18n.with_locale(user.locale) do
+        {
+          title: I18n.t("notifications.morning_summary.title"),
+          body:,
+          url: "/calendar"
+        }
+      end
     end
 
     private
@@ -23,18 +25,23 @@ module Notifications
     attr_reader :user, :reference_time, :zone
 
     def body
-      late_count = late_tasks_count
-      header = "Good morning, #{user.first_name} #{user.last_name}!"
-      summary = "You have #{total_tasks_count(late_count)} tasks for today"
-      summary = if late_count.zero?
-        "#{summary}:"
-      else
-        "#{summary}, from which #{late_count} are late:"
+      I18n.with_locale(user.locale) do
+        late_count = late_tasks_count
+        header = I18n.t(
+          "notifications.morning_summary.header",
+          first_name: user.first_name,
+          last_name: user.last_name
+        )
+        summary = if late_count.zero?
+          I18n.t("notifications.morning_summary.summary", count: total_tasks_count(late_count))
+        else
+          I18n.t("notifications.morning_summary.summary_with_late", count: total_tasks_count(late_count), late_count:)
+        end
+
+        return [ header, summary ].join("\n") if task_preview_lines.empty?
+
+        [ header, summary, nil, *task_preview_lines ].compact.join("\n")
       end
-
-      return [ header, summary ].join("\n") if task_preview_lines.empty?
-
-      [ header, summary, nil, *task_preview_lines ].compact.join("\n")
     end
 
     def total_tasks_count(late_tasks_count)
@@ -78,7 +85,7 @@ module Notifications
 
       return preview_titles if remaining_count <= 0
 
-      [ *preview_titles, "+#{remaining_count} more" ]
+      [ *preview_titles, I18n.t("notifications.morning_summary.more", count: remaining_count) ]
     end
 
     def actionable_task_titles

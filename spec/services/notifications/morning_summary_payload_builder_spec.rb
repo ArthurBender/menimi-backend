@@ -40,7 +40,7 @@ RSpec.describe Notifications::MorningSummaryPayloadBuilder do
 
       expect(payload).to eq(
         title: "Daily task summary",
-        body: "Good morning, Jane Doe!\nYou have 3 tasks for today, from which 1 are late:\n- Review inbox\n- Plan sprint\n+1 more",
+        body: "Good morning, Jane Doe!\nYou have 3 tasks for today, 1 of which are late:\n- Review inbox\n- Plan sprint\n+1 more",
         url: "/calendar"
       )
     end
@@ -58,7 +58,26 @@ RSpec.describe Notifications::MorningSummaryPayloadBuilder do
 
       expect(payload).to eq(
         title: "Daily task summary",
-        body: "Good morning, Jane Doe!\nYou have 1 tasks for today:\n- Go for a walk",
+        body: "Good morning, Jane Doe!\nYou have 1 task for today:\n- Go for a walk",
+        url: "/calendar"
+      )
+    end
+
+    it "builds a translated payload for Portuguese users" do
+      user = create(:user, timezone:, language: "pt-BR", first_name: "Jane", last_name: "Doe")
+      create(
+        :task,
+        user:,
+        title: "Revisar inbox",
+        carry_over: false,
+        starts_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-10 09:00:00") }
+      )
+
+      payload = described_class.call(user:, reference_time:)
+
+      expect(payload).to eq(
+        title: "Resumo diario de tarefas",
+        body: "Bom dia, Jane Doe!\nVoce tem 1 tarefa para hoje:\n- Revisar inbox",
         url: "/calendar"
       )
     end

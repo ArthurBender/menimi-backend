@@ -15,6 +15,7 @@ module Api
               id: resource.id,
               email: resource.email,
               first_name: resource.first_name,
+              language: resource.language,
               last_name: resource.last_name,
               timezone: resource.timezone
             }

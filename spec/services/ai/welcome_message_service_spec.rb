@@ -77,5 +77,23 @@ RSpec.describe Ai::WelcomeMessageService do
         described_class.call(user:)
       end.to raise_error(described_class::GenerationError, "GEMINI_API_KEY is not configured")
     end
+
+    it "instructs Gemini to answer in the user's preferred language" do
+      user.update!(language: "pt-BR")
+      captured_request = nil
+
+      allow(http_client).to receive(:request) do |request|
+        captured_request = request
+        http_response
+      end
+
+      described_class.call(user:)
+
+      request_payload = JSON.parse(captured_request.body)
+      prompt = request_payload.dig("contents", 0, "parts", 0, "text")
+
+      expect(prompt).to include("Write the final answer in Brazilian Portuguese.")
+      expect(prompt).to include("\"language\": \"pt-BR\"")
+    end
   end
 end

@@ -15,6 +15,7 @@ module Ai
         date: target_date.iso8601,
         full_name: [ user.first_name, user.last_name ].join(" ").strip,
         due_today_count: due_today_tasks.count,
+        language: user.language,
         late_count: late_task_titles.count,
         task_titles: actionable_task_titles
       }

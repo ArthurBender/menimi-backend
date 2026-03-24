@@ -31,6 +31,7 @@ module Api
             :password_confirmation,
             :first_name,
             :last_name,
+            :language,
             :timezone
           )
         end
@@ -42,6 +43,7 @@ module Api
             :password_confirmation,
             :first_name,
             :last_name,
+            :language,
             :timezone
           ).compact_blank
         end

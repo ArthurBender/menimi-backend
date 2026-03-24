@@ -1,0 +1,14 @@
+pt-BR:
+  notifications:
+    morning_summary:
+      header: "Bom dia, %{first_name} %{last_name}!"
+      more:
+        one: "+%{count} outra"
+        other: "+%{count} outras"
+      summary:
+        one: "Voce tem %{count} tarefa para hoje:"
+        other: "Voce tem %{count} tarefas para hoje:"
+      summary_with_late:
+        one: "Voce tem %{count} tarefa para hoje, %{late_count} atrasada:"
+        other: "Voce tem %{count} tarefas para hoje, %{late_count} atrasadas:"
+      title: "Resumo diario de tarefas"

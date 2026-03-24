@@ -28,4 +28,16 @@
 #       enabled: "ON"
 
 en:
-  hello: "Hello world"
+  notifications:
+    morning_summary:
+      header: "Good morning, %{first_name} %{last_name}!"
+      more:
+        one: "+%{count} more"
+        other: "+%{count} more"
+      summary:
+        one: "You have %{count} task for today:"
+        other: "You have %{count} tasks for today:"
+      summary_with_late:
+        one: "You have %{count} task for today, %{late_count} of which is late:"
+        other: "You have %{count} tasks for today, %{late_count} of which are late:"
+      title: "Daily task summary"

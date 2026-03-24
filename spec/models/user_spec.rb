@@ -9,12 +9,13 @@ RSpec.describe User, type: :model do
     end
 
     it "requires email, first_name and last_name" do
-      user = build(:user, email: nil, first_name: nil, last_name: nil, timezone: nil)
+      user = build(:user, email: nil, first_name: nil, language: nil, last_name: nil, timezone: nil)
 
       expect(user).not_to be_valid
 
       expect(user.errors[:email]).to include("can't be blank")
       expect(user.errors[:first_name]).to include("can't be blank")
+      expect(user.errors[:language]).to include("can't be blank")
       expect(user.errors[:last_name]).to include("can't be blank")
       expect(user.errors[:timezone]).to include("can't be blank")
     end
@@ -24,6 +25,13 @@ RSpec.describe User, type: :model do
       user = build(:user, email: "user@example.com")
 
       expect(user).not_to be_valid
+    end
+
+    it "rejects unsupported languages" do
+      user = build(:user, language: "es")
+
+      expect(user).not_to be_valid
+      expect(user.errors[:language]).to include("is not included in the list")
     end
   end
 
