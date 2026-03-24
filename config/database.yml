@@ -14,3 +14,11 @@ development:
 test:
   <<: *default
   database: menimi_backend_test
+
+production:
+  primary:
+    <<: *default
+    url: <%= ENV.fetch("DATABASE_URL") %>
+  cache:
+    <<: *default
+    url: <%= ENV.fetch("CACHE_DATABASE_URL", ENV.fetch("DATABASE_URL")) %>
