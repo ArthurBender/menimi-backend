@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       resources :tasks, only: %i[index show create update]
       resources :task_occurrences, only: %i[create update destroy]
       resource :push_subscriptions, only: %i[create destroy]
+      resource :welcome_message, only: :show
     end
   end
 

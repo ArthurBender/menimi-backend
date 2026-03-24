@@ -10,6 +10,8 @@ Rails API for authentication, recurring tasks, carry-over reconciliation, and we
 - `APP_HOSTS`: Comma-separated list of allowed production hostnames. Example: `api.example.com,api.internal.example.com`.
 - `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed frontend origins. Example: `https://app.example.com,https://staging.example.com`.
 - `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`: Required for web-push delivery.
+- `GEMINI_API_KEY`: Required for generating on-demand welcome messages.
+- `GEMINI_MODEL`: Optional Gemini model override for welcome messages. Defaults to `gemini-2.5-flash`.
 
 ## Local development
 
