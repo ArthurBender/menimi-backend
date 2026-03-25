@@ -13,6 +13,7 @@ module CarryOver
         next unless run_window_open?(timezone)
 
         ReconciliationService.call(timezone:, reference_time:)
+        Notifications::MorningSummaryRunner.call(timezone:, reference_time:)
       end
     end
 
