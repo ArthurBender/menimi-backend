@@ -22,7 +22,7 @@ module CarryOver
     attr_reader :reference_time
 
     def configured_timezones
-      Array(Rails.configuration.x.carry_over.timezones).compact
+      User.pluck(:timezone).uniq
     end
 
     def run_window_open?(timezone)
@@ -31,7 +31,7 @@ module CarryOver
     end
 
     def run_window_minutes
-      Rails.configuration.x.carry_over.run_window_minutes
+      9
     end
   end
 end

@@ -1,20 +1,11 @@
 require "rails_helper"
 
 RSpec.describe CarryOver::ReconciliationRunner do
+  before do
+    user = create(:user, timezone: "America/Sao_Paulo")
+  end
+
   describe ".call" do
-    around do |example|
-      old_timezones = Rails.configuration.x.carry_over.timezones
-      old_window = Rails.configuration.x.carry_over.run_window_minutes
-
-      Rails.configuration.x.carry_over.timezones = [ "America/Sao_Paulo", "UTC" ]
-      Rails.configuration.x.carry_over.run_window_minutes = 15
-
-      example.run
-
-      Rails.configuration.x.carry_over.timezones = old_timezones
-      Rails.configuration.x.carry_over.run_window_minutes = old_window
-    end
-
     it "runs reconciliation only for timezones inside midnight window" do
       reference_time = Time.use_zone("America/Sao_Paulo") { Time.zone.parse("2026-03-10 00:05:00") }
 
