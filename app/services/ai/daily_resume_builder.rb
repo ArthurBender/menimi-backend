@@ -41,7 +41,7 @@ module Ai
 
     def late_task_titles
       @late_task_titles ||= Task.joins(:task_occurrences)
-                                .where(user:, carry_over: true, task_occurrences: { status: :missed })
+                                .where(user:, carry_over: true, active: true, task_occurrences: { status: :missed })
                                 .where(task_occurrences: { occurred_at: ...target_day_start })
                                 .order("task_occurrences.occurred_at ASC")
                                 .pluck(:title)
