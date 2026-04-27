@@ -24,7 +24,11 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       resources :tasks, only: %i[index show create update]
-      resources :task_occurrences, only: %i[create update destroy]
+      resources :task_occurrences, only: %i[create update destroy] do
+        collection do
+          get :stats
+        end
+      end
       resource :push_subscriptions, only: %i[create destroy]
       resource :welcome_message, only: :show
     end

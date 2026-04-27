@@ -95,5 +95,30 @@ RSpec.describe Ai::WelcomeMessageService do
       expect(prompt).to include("Write the final answer in Brazilian Portuguese.")
       expect(prompt).to include("\"language\": \"pt-BR\"")
     end
+
+    it "overrides the user's language when an explicit language param is given" do
+      captured_request = nil
+
+      allow(http_client).to receive(:request) do |request|
+        captured_request = request
+        http_response
+      end
+
+      described_class.call(user:, language: "pt-BR")
+
+      request_payload = JSON.parse(captured_request.body)
+      prompt = request_payload.dig("contents", 0, "parts", 0, "text")
+
+      expect(prompt).to include("Write the final answer in Brazilian Portuguese.")
+    end
+
+    it "caches per language so different languages generate separate messages" do
+      reference_time = Time.use_zone(timezone) { Time.zone.parse("2026-03-24 08:00:00") }
+
+      described_class.call(user:, language: "en", reference_time:)
+      described_class.call(user:, language: "pt-BR", reference_time:)
+
+      expect(http_client).to have_received(:request).twice
+    end
   end
 end

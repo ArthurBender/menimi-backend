@@ -8,6 +8,38 @@ RSpec.describe "TaskOccurrences", type: :request do
     @headers = auth_headers_for(@user)
   end
 
+  describe "GET /task_occurrences/stats" do
+    it "returns done and missed counts for the current user" do
+      create(:task_occurrence, task: @task, status: "done")
+      create_list(:task_occurrence, 3, task: @task, status: "missed")
+
+      get stats_api_v1_task_occurrences_path, headers: @headers
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["done"]).to eq(2)   # 1 from before block + 1 here
+      expect(body["missed"]).to eq(3)
+    end
+
+    it "does not include other users' occurrences in counts" do
+      other_task = create(:task, user: create(:user))
+      create_list(:task_occurrence, 2, task: other_task, status: "done")
+
+      get stats_api_v1_task_occurrences_path, headers: @headers
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["done"]).to eq(1)   # only @task_occurrence from before block
+      expect(body["missed"]).to eq(0)
+    end
+
+    it "requires authentication" do
+      get stats_api_v1_task_occurrences_path
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "POST /task_occurrences" do
     it "creates a task_occurrence with the expected JSON fields" do
       expect do

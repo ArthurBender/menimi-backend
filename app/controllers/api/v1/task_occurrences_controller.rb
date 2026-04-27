@@ -3,6 +3,14 @@ module Api
     class TaskOccurrencesController < ApplicationController
       before_action :set_task_occurrence, only: %i[update destroy]
 
+      def stats
+        occurrences = TaskOccurrence.joins(:task).where(tasks: { user_id: current_user.id })
+        render json: {
+          done: occurrences.status_done.count,
+          missed: occurrences.status_missed.count
+        }
+      end
+
       def create
         if resolve_missed_occurrence!
           render :show

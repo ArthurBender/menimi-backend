@@ -5,7 +5,9 @@ RSpec.describe "WelcomeMessages", type: :request do
     it "returns the cached welcome message for the signed-in user" do
       user = create(:user)
 
-      allow(Ai::WelcomeMessageService).to receive(:call).with(user:).and_return("You have a focused day ahead.")
+      allow(Ai::WelcomeMessageService).to receive(:call)
+        .with(user:, language: nil)
+        .and_return("You have a focused day ahead.")
 
       get api_v1_welcome_message_path, headers: auth_headers_for(user)
 
@@ -13,12 +15,34 @@ RSpec.describe "WelcomeMessages", type: :request do
       expect(JSON.parse(response.body)).to eq("message" => "You have a focused day ahead.")
     end
 
+    it "passes the language param to the service" do
+      user = create(:user)
+
+      allow(Ai::WelcomeMessageService).to receive(:call)
+        .with(user:, language: "pt-BR")
+        .and_return("Bom dia, tenha um ótimo dia.")
+
+      get api_v1_welcome_message_path, params: { language: "pt-BR" }, headers: auth_headers_for(user)
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq("message" => "Bom dia, tenha um ótimo dia.")
+    end
+
+    it "returns 400 for an unsupported language" do
+      user = create(:user)
+
+      get api_v1_welcome_message_path, params: { language: "fr" }, headers: auth_headers_for(user)
+
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)).to eq("error" => "language must be 'en' or 'pt-BR'")
+    end
+
     it "returns a 503 when welcome message generation fails" do
       user = create(:user)
 
-      allow(Ai::WelcomeMessageService).to receive(:call).with(user:).and_raise(
-        Ai::WelcomeMessageService::GenerationError, "Gemini request failed"
-      )
+      allow(Ai::WelcomeMessageService).to receive(:call)
+        .with(user:, language: nil)
+        .and_raise(Ai::WelcomeMessageService::GenerationError, "Gemini request failed")
 
       get api_v1_welcome_message_path, headers: auth_headers_for(user)
 

@@ -7,12 +7,13 @@ module Ai
 
     DEFAULT_MODEL = "gemini-2.5-flash".freeze
 
-    def self.call(user:, reference_time: Time.current)
-      new(user:, reference_time:).call
+    def self.call(user:, language: nil, reference_time: Time.current)
+      new(user:, language:, reference_time:).call
     end
 
-    def initialize(user:, reference_time:)
+    def initialize(user:, language:, reference_time:)
       @user = user
+      @language_override = language
       @reference_time = reference_time
     end
 
@@ -24,7 +25,7 @@ module Ai
 
     private
 
-    attr_reader :reference_time, :user
+    attr_reader :language_override, :reference_time, :user
 
     def api_key
       ENV.fetch("GEMINI_API_KEY")
@@ -33,7 +34,11 @@ module Ai
     end
 
     def cache_key
-      "users/#{user.id}/welcome_message/#{local_date}"
+      "users/#{user.id}/welcome_message/#{local_date}/#{effective_language}"
+    end
+
+    def effective_language
+      language_override || user.language
     end
 
     def daily_resume
@@ -90,7 +95,7 @@ module Ai
     end
 
     def language_label
-      user.language == "pt-BR" ? "Brazilian Portuguese" : "English"
+      effective_language == "pt-BR" ? "Brazilian Portuguese" : "English"
     end
 
     def request
