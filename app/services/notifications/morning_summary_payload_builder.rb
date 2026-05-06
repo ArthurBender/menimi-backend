@@ -71,7 +71,7 @@ module Notifications
 
     def late_tasks_count
       TaskOccurrence.joins(:task)
-                    .where(status: :missed, tasks: { user_id: user.id, carry_over: true })
+                    .where(status: :missed, tasks: { user_id: user.id, carry_over: true, active: true })
                     .where(occurred_at: ...target_day_start)
                     .count
     end
