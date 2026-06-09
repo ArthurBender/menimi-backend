@@ -69,11 +69,21 @@ module Notifications
       []
     end
 
+    def late_tasks
+      @late_tasks ||= Task.where(user:, carry_over: true, active: true)
+                          .includes(:task_occurrences)
+                          .select { |task| late_carry_over?(task) }
+    end
+
+    def late_carry_over?(task)
+      past = task.task_occurrences.select { |occ| occ.occurred_at < target_day_start }
+      return false if past.empty?
+
+      past.max_by(&:occurred_at).status_missed?
+    end
+
     def late_tasks_count
-      TaskOccurrence.joins(:task)
-                    .where(status: :missed, tasks: { user_id: user.id, carry_over: true, active: true })
-                    .where(occurred_at: ...target_day_start)
-                    .count
+      late_tasks.size
     end
 
     def task_preview_lines
@@ -97,11 +107,7 @@ module Notifications
     end
 
     def late_task_titles
-      Task.joins(:task_occurrences)
-          .where(user:, carry_over: true, active: true, task_occurrences: { status: :missed })
-          .where(task_occurrences: { occurred_at: ...target_day_start })
-          .order("task_occurrences.occurred_at ASC")
-          .pluck(:title)
+      late_tasks.map(&:title).uniq
     end
 
     def target_date

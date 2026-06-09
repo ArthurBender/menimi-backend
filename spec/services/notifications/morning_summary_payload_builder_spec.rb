@@ -63,6 +63,61 @@ RSpec.describe Notifications::MorningSummaryPayloadBuilder do
       )
     end
 
+    it "counts a recurrent task with multiple missed occurrences as one late task" do
+      recurrent_task = create(
+        :task,
+        user:,
+        title: "Daily standup",
+        carry_over: true,
+        rrule: "FREQ=DAILY;INTERVAL=1",
+        starts_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-01 09:00:00") }
+      )
+      create(
+        :task_occurrence,
+        task: recurrent_task,
+        status: "missed",
+        occurred_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-08 09:00:00") }
+      )
+      create(
+        :task_occurrence,
+        task: recurrent_task,
+        status: "missed",
+        occurred_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-09 09:00:00") }
+      )
+
+      payload = described_class.call(user:, reference_time:)
+
+      # 1 due today (the recurrent task itself) + 1 late = 2 total; late_count = 1, not 2
+      expect(payload[:body]).to include("2 tasks for today, 1 of which are late")
+    end
+
+    it "does not count a recurrent task as late when its last occurrence is done" do
+      recurrent_task = create(
+        :task,
+        user:,
+        title: "Daily standup",
+        carry_over: true,
+        rrule: "FREQ=DAILY;INTERVAL=1",
+        starts_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-01 09:00:00") }
+      )
+      create(
+        :task_occurrence,
+        task: recurrent_task,
+        status: "missed",
+        occurred_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-08 09:00:00") }
+      )
+      create(
+        :task_occurrence,
+        task: recurrent_task,
+        status: "done",
+        occurred_at: Time.use_zone(timezone) { Time.zone.parse("2026-03-09 09:00:00") }
+      )
+
+      payload = described_class.call(user:, reference_time:)
+
+      expect(payload[:body]).not_to include("late")
+    end
+
     it "builds a translated payload for Portuguese users" do
       user = create(:user, timezone:, language: "pt-BR", first_name: "Jane", last_name: "Doe")
       create(
